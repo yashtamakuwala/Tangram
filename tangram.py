@@ -25,8 +25,7 @@ def getPieces( paths):
         pathLine = texts[0]
         color = texts[1]
 
-        
-        a = ' '.join(pathLine.split())
+        a = re.sub('\s+', ' ', pathLine).strip().split(' ')
         length = len(a)
         
         for i in range(1,length,3):
