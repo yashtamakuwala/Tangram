@@ -81,7 +81,7 @@ def are_valid(coloured_pieces):
         # pointsList = pointsList * 2
         newLen = len(pointsList)
 
-        if actualLength > 3: 
+        if actualLength >= 3: 
             for i in range(0, actualLength-2):
                 ptA = pointsList[i]
                 ptB = pointsList[i+1]
