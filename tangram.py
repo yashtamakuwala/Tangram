@@ -2,6 +2,7 @@ import re
 import numpy as np
 from collections import namedtuple
 from matplotlib import path
+import random
 
 class Point():
        x = 0
@@ -96,9 +97,6 @@ def are_valid(coloured_pieces):
                     ptD = pointsList[(j+1) % actualLength]
 
                     det0, det1 = 0,0
-                    # j = j % actualLength
-                    # ptC = pointsList[j]
-                    # ptD = pointsList[j+1]
                     det0 =  checkOrientationFor2Points(ptA, ptB, ptC)
                     det1 =  checkOrientationFor2Points(ptA, ptB, ptD)
 
@@ -139,7 +137,7 @@ def getAreaOfColoredPieces(pointsList):
         area += (pointTupleJ[0] + pointTupleI[0]) * (pointTupleJ[1] - pointTupleI[1])
         j = i
 
-    return area/2.0
+    return abs(area/2.0)
 
 def are_identical_sets_of_coloured_pieces( coloured_pieces_1, coloured_pieces_2):
     area1, area2 = 0.0, 0.0
@@ -286,8 +284,8 @@ def check(coloured_pieces_1, coloured_pieces_2):
 
 def is_solution(tangram, shape):
     
-    if not are_valid(tangram):
-        return False
+    # if not are_valid(tangram):
+    #     return False
 
     #check area
     areaTangram, areaShape = 0.0, 0.0
@@ -300,9 +298,140 @@ def is_solution(tangram, shape):
 
     if areaTangram != areaShape:
         return False
+
+    pieces, target = dict(), dict()
+    if len(tangram.keys()) > 1 :
+        pieces, target = tangram, shape
+    else:
+        pieces, target = shape, tangram
+
+
+    # check if point inside polygon
+    allTargetValues = target.values()
+    targetPoints = list()
+
+    for value in allTargetValues:
+        targetPoints = value
     
+    increasedPoints1 = increaseSizeOfPolygon(targetPoints, 0.1, 0.0)
+    increasedPoints2 = increaseSizeOfPolygon(targetPoints, 0.0, 0.1)
+    increasedPoints3 = increaseSizeOfPolygon(targetPoints, 0.0, -0.1)
+    increasedPoints4 = increaseSizeOfPolygon(targetPoints, -0.1, 0.0)
+    polyPath = path.Path(increasedPoints1)
+
+    for key in pieces:
+        ptsList = pieces[key]
+
+        inOutArray = polyPath.contains_points(ptsList)
+        
+        polyPath = path.Path(increasedPoints2)
+        inOutArray2 = polyPath.contains_points(ptsList)
+            # for i in range(0,len(inOutArray)):
+            #     if inOutArray2[i]:
+            #         ptsList.pop(i)
+
+            
+        polyPath = path.Path(increasedPoints3)
+        inOutArray3 = polyPath.contains_points(ptsList)
+        
+                
+                # if len(ptsList) > 0:
+        polyPath = path.Path(increasedPoints4)
+        inOutArray4 = polyPath.contains_points(ptsList)
+                    # for i in range(0,len(inOutArray)):
+                    #     if inOutArray4[i]:
+                    #         ptsList.pop(i)
+
+        a1 = np.array(inOutArray)
+        a2 = np.array(inOutArray2)
+        a3 = np.array(inOutArray3)
+        a4 = np.array(inOutArray4)
+
+        z = a1 | a2 | a3 | a4
+
+        if not z.all :
+            return False
+
+    # for key in pieces:
+    #     for pt in pieces[key]:
+            
+    #         inOutArray = polyPath.contains_points([pt])
+
+    #         if pt in targetPoints:
+    #             continue
+
+
+    #         # Check collinearlity of points, range of x and y coordinate and determinant of 3 points
+    #         if not inOutArray[0]:
+    #             return False
+
+    #         # if not point_inside_polygon(pt[0], pt[1], targetPoints):
+    #         #     return False
+
+
+    # pieces not intersecting with shape
+    if doPiecesIntersectTarget(pieces, targetPoints):
+        return False
+
     return True
 
+def increaseSizeOfPolygon(targetPoints, xinc, yinc):
+    increasedPoints = list()
+    for ptTuple in targetPoints:
+        x = float(ptTuple[0]) + xinc
+        y = float(ptTuple[1]) + yinc
+        increasedPoints.append((x,y))
+    return increasedPoints
+
+def doPiecesIntersectTarget(pieces, targetPoints):
+    tgPtLength = len(targetPoints)
+    for key in pieces:
+        ptList = pieces[key]
+        length = len(ptList)
+
+        for i in range(0,length+1):
+            ptA = ptList[i%length]
+            ptB = ptList[(i+1)%length]
+
+            for j in range(i + 2, tgPtLength+1):
+                j = j % tgPtLength
+                ptC = targetPoints[j]
+                ptD = targetPoints[(j+1)%tgPtLength]
+                
+                det0, det1 = 0,0
+                det0 =  checkOrientationFor2Points(ptA, ptB, ptC)
+                det1 =  checkOrientationFor2Points(ptA, ptB, ptD)
+
+                if det0 != det1:
+                    det0 =  checkOrientationFor2Points(ptC, ptD, ptA)
+                    det1 =  checkOrientationFor2Points(ptC, ptD, ptB)
+
+                    if det0 != det1:
+                        return True
+                
+                else:
+                    continue
+    return False
+
+
+def point_inside_polygon(x,y,poly):
+
+    n = len(poly)
+    inside = False
+
+    p1x,p1y = poly[0]
+    for i in range(n+1):
+        p2x,p2y = poly[i % n]
+        if y > min(p1y,p2y):
+            if y <= max(p1y,p2y):
+                if x <= max(p1x,p2x):
+                    if p1y != p2y:
+                        xinters = (y-p1y)*(p2x-p1x)/(p2y-p1y)+p1x
+                    if p1x == p2x or x <= xinters:
+                        inside = not inside
+        p1x,p1y = p2x,p2y
+
+    return inside
 
 def available_coloured_pieces(file):
     coloured_pieces = dict()
@@ -310,14 +439,8 @@ def available_coloured_pieces(file):
     return coloured_pieces
 
 
-# file = open('pieces_A.xml')
-
-
-# coloured_pieces_1 = available_coloured_pieces(file)
-# print('Piece is valid: ' + str(are_valid(coloured_pieces_1)))
-
 # file = open('shape_A_1.xml')
-# coloured_pieces_2 = available_coloured_pieces(file)
-# print(are_identical_sets_of_coloured_pieces(coloured_pieces_1, coloured_pieces_2))
-
-# print(check(coloured_pieces_1, coloured_pieces_2))
+# shape = available_coloured_pieces(file)
+# file = open('tangram_A_1_a.xml')
+# tangram = available_coloured_pieces(file)
+# print(is_solution(tangram, shape))
