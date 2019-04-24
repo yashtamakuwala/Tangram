@@ -52,6 +52,10 @@ def readFile(f):
     return getPieces(paths)
 
 def are_valid(coloured_pieces):
+
+    if not coloured_pieces:
+        return False
+
     for key in coloured_pieces:
         pointsList = coloured_pieces[key]
         pointsSet = set(pointsList)
