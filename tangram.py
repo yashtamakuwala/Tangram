@@ -88,7 +88,7 @@ def are_valid(coloured_pieces):
                 for j in range(i+2, actualLength + i - 2):
                     j = j % actualLength
                     ptC = pointsList[j]
-                    ptD = pointsList[j+1]
+                    ptD = pointsList[(j+1) % actualLength]
 
                     det0, det1 = 0,0
                     # j = j % actualLength
@@ -148,7 +148,7 @@ def are_identical_sets_of_coloured_pieces( coloured_pieces_1, coloured_pieces_2)
     if area1 != area2:
         return False
     
-    return True
+    return check(coloured_pieces_1, coloured_pieces_2)
 
 def reflectionXaxis( pointsList):
     reflectedPoints = set()
@@ -279,20 +279,40 @@ def check(coloured_pieces_1, coloured_pieces_2):
     
     return True
 
-# t = Tangram()
-file = open('pieces_A.xml')
-# coloured_pieces_1 = []
+def is_solution(tangram, shape):
+    
+    if not are_valid(tangram):
+        return False
+
+    #check area
+    areaTangram, areaShape = 0.0, 0.0
+
+    for key in tangram:
+        areaTangram += getAreaOfColoredPieces(tangram[key])
+    
+    for key in shape:
+        areaShape += getAreaOfColoredPieces(shape[key])
+
+    if areaTangram != areaShape:
+        return False
+    
+    return True
+
 
 def available_coloured_pieces(file):
     coloured_pieces = dict()
     coloured_pieces = readFile(file)
     return coloured_pieces
 
-coloured_pieces_1 = available_coloured_pieces(file)
+
+# file = open('pieces_A.xml')
+
+
+# coloured_pieces_1 = available_coloured_pieces(file)
 # print('Piece is valid: ' + str(are_valid(coloured_pieces_1)))
 
-file = open('shape_A_1.xml')
-coloured_pieces_2 = available_coloured_pieces(file)
+# file = open('shape_A_1.xml')
+# coloured_pieces_2 = available_coloured_pieces(file)
 # print(are_identical_sets_of_coloured_pieces(coloured_pieces_1, coloured_pieces_2))
 
-print(check(coloured_pieces_1, coloured_pieces_2))
+# print(check(coloured_pieces_1, coloured_pieces_2))
