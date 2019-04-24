@@ -1,6 +1,7 @@
 import re
 import numpy as np
 from collections import namedtuple
+from matplotlib import path
 
 class Point():
        x = 0
